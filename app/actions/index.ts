@@ -2,9 +2,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ID } from "node-appwrite";
+import { ID, InputFile } from "node-appwrite";
 import { createAdminClient, createSessionClient } from "../services/appwrite";
-
+import { Readable } from "node:stream";
 
 /**
  * Logs in a user using the provided form data.
@@ -86,5 +86,35 @@ export async function signOutUser() {
     redirect("/sign-in");
   } catch (error) {
     console.error("[logout]", error);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// STORAGE
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * Uploads a file to the Appwrite storage.
+ * 
+ * @param formData - The form data containing the file to upload.
+ * @returns A Promise that resolves with the response from the server if the file is uploaded successfully, or rejects with an error if there's an issue with the upload.
+ */
+export async function uploadFile(formData: FormData) {
+  try {
+    const { storage } = await createSessionClient();
+    const file = formData.get("uploadFile") as File;
+
+    const stream = new Readable();
+    stream.push(new Uint8Array(await file.arrayBuffer()));
+    stream.push(null);
+
+    const response = await storage.createFile(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      ID.unique(),
+      InputFile.fromStream(stream, file.name, file.size),
+    );
+    return response;
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    return Promise.reject(error);
   }
 }
