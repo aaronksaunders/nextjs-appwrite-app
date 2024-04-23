@@ -1,17 +1,32 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
+  const path = usePathname();
+  console.log('path', path);
+
   return (
-    <div>
-      <h1>HEADER</h1>
-      <Link href="/home">
-        <div>Projects</div>
-      </Link>
-      <Link href="/dashboard">
-        <div>Dashboard</div>
-      </Link>
-      <button>Logout</button>
-    </div>
+    <header className="bg-gray-800 text-white p-4 mb-16">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="flex gap-8">
+          <Link
+            href="/dashboard"
+            className={`hover:text-gray-400  ${path === '/dashboard' ? 'underline underline-offset-8' : ''}`}
+          >
+            <div>Dashboard</div>
+          </Link>
+          <Link
+            href="/home"
+            className={`hover:text-gray-400  ${path === '/home' || path.startsWith('/tasks') ? 'underline underline-offset-8' : ''}`}
+
+          >
+            <div>Projects</div>
+          </Link>
+        </div>
+        <button>Logout</button>
+      </div>
+    </header>
   );
 };
 

@@ -10,7 +10,7 @@ const HomePage = async () => {
   const projects = await listProjectDocuments();
 
   return (
-    <main className="">
+    <main >
       <h2 className="text-2xl font-bold">Projects Page</h2>
       {projects.map((project) => (
         <Link href={`/tasks/${project.$id}`} key={project.$id}>
