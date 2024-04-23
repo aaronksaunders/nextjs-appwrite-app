@@ -24,6 +24,12 @@ const Header = () => {
           >
             <div>Projects</div>
           </Link>
+          <Link
+            href="/images"
+            className={`hover:text-gray-400  ${path === '/images' ? 'underline underline-offset-8' : ''}`}
+          >
+            <div>Images</div>
+          </Link>
         </div>
         <form action={signOutUser}>
         <button>LOGOUT</button>

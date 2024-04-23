@@ -4,7 +4,7 @@ import { uploadFile } from "@/app/actions";
 import { Models } from "node-appwrite";
 import { ChangeEvent, useState } from "react";
 
-export const PageContent = () => {
+export const UploadFile = () => {
   const [selectedFile, setSelectedFile] = useState<File>();
 
   /**
@@ -39,16 +39,19 @@ export const PageContent = () => {
   };
 
   return (
-    <div>
-      <h2>File Upload</h2>
+    <div className="mt-4 mb-8 border border-slate-500 p-4 rounded">
+      <h2 className=" font-bold mb-2">File Upload</h2>
       <form action={doFormAction}>
         <input
+          className="mb"
           type="file"
           onChange={handleFileChange}
           name="uploadFile"
           id="uploadFile"
         />
-        <button type="submit">Upload</button>
+        <div className="mt-4">
+          <button className="border border-slate-500 rounded-md px-3 py-1.5" type="submit">Upload File</button>
+        </div>
       </form>
     </div>
   );

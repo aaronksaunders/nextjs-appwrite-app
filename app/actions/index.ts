@@ -94,7 +94,7 @@ export async function signOutUser() {
 ////////////////////////////////////////////////////////////////////////////////
 /**
  * Uploads a file to the Appwrite storage.
- * 
+ *
  * @param formData - The form data containing the file to upload.
  * @returns A Promise that resolves with the response from the server if the file is uploaded successfully, or rejects with an error if there's an issue with the upload.
  */
@@ -103,18 +103,115 @@ export async function uploadFile(formData: FormData) {
     const { storage } = await createSessionClient();
     const file = formData.get("uploadFile") as File;
 
-    const stream = new Readable();
-    stream.push(new Uint8Array(await file.arrayBuffer()));
-    stream.push(null);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     const response = await storage.createFile(
       process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
       ID.unique(),
-      InputFile.fromStream(stream, file.name, file.size),
+      InputFile.fromBuffer(buffer, file.name)
     );
     return response;
   } catch (error) {
     console.error("Error uploading file:", error);
+    return Promise.reject(error);
+  }
+}
+
+export async function downloadFile(fileId: string) {
+  try {
+    const { storage } = await createSessionClient();
+    const response = await storage.getFileDownload(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      fileId
+    );
+    return response;
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    return Promise.reject(error);
+  }
+}
+
+export async function deleteFile(fileId: string) {
+  try {
+    const { storage } = await createSessionClient();
+    const response = await storage.deleteFile(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      fileId
+    );
+    return response;
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    return Promise.reject(error);
+  }
+}
+
+export async function listFiles() {
+  try {
+    const { storage } = await createSessionClient();
+    const response = await storage.listFiles(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!
+    );
+    return response;
+  } catch (error) {
+    console.error("Error listing files:", error);
+    return Promise.reject(error);
+  }
+}
+
+export async function getFile(fileId: string) {
+  try {
+    const { storage } = await createSessionClient();
+    const response = await storage.getFile(process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,fileId);
+    return response;
+  } catch (error) {
+    console.error("Error getting file:", error);
+    return Promise.reject(error);
+  }
+}
+
+export async function updateFile(fileId: string, formData: FormData) {
+}
+
+export async function previewFile(fileId: string) {
+  try {
+    const { storage } = await createSessionClient();
+    const response = await storage.getFilePreview(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      fileId,
+      200
+    );
+    return response;
+  } catch (error) {
+    console.error("Error previewing file:", error);
+    return Promise.reject(error);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DATABASE
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new document in the Appwrite database.
+ *
+ * @param formData - The form data containing the document to create.
+ * @returns A Promise that resolves with the response from the server if the document is created successfully, or rejects with an error if there's an issue with the creation.
+ */
+export async function createDocument(formData: FormData) {
+  try {
+    const { database } = await createSessionClient();
+    const collectionId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID!;
+    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+    const data = Object.fromEntries(formData.entries());
+    const response = await database.createDocument(
+      databaseId,
+      collectionId,
+      ID.unique(),
+      data
+    );
+    return response;
+  } catch (error) {
+    console.error("Error creating document:", error);
     return Promise.reject(error);
   }
 }
