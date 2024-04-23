@@ -41,7 +41,7 @@ const TaskPage = async ({
   };
 
   return (
-    <main className="">
+    <main className="flex flex-wrap justify-center flex-col border  w-1/2">
       <h2 className="text-2xl font-bold">Project Task Page</h2>
       <p>Welcome to the project task page <span className="font-bold capitalize">{project?.name}</span></p>
       {tasks.map((task) => (

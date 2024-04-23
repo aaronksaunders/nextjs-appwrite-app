@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOutUser } from "../actions";
 
 const Header = () => {
   const path = usePathname();
@@ -24,7 +25,9 @@ const Header = () => {
             <div>Projects</div>
           </Link>
         </div>
-        <button>Logout</button>
+        <form action={signOutUser}>
+        <button>LOGOUT</button>
+      </form>
       </div>
     </header>
   );

@@ -9,13 +9,10 @@ const DashboardPage = async () => {
   if (!user) redirect("/sign-in");
 
   return (
-    <main className="">
+    <main className="flex flex-wrap justify-center flex-col border  w-1/2">
       <h2 className="text-2xl font-bold">Dashboard</h2>
       <p>Welcome to the dashboard</p>
       <UserInformation />
-      <form action={signOutUser}>
-        <button>LOGOUT</button>
-      </form>
     </main>
   );
 };
