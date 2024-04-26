@@ -39,6 +39,13 @@ export async function signInUser(state: any, formData: FormData): Promise<any> {
   return redirect("/dashboard");
 }
 
+/**
+ * Signs up a user with the provided form data.
+ * 
+ * @param state - The state object.
+ * @param formData - The form data containing user information.
+ * @returns A promise that resolves when the user is signed up successfully, or rejects with an error.
+ */
 export async function signUpUser(state: any, formData: FormData) {
   try {
     const email = formData.get("email");
@@ -72,6 +79,9 @@ export async function signUpUser(state: any, formData: FormData) {
   }
 }
 
+/**
+ * Signs out the current user by deleting the session and clearing the authentication cookie.
+ */
 export async function signOutUser() {
   try {
     const { account } = await createSessionClient();
