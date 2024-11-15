@@ -11,6 +11,21 @@ import {
 } from "node-appwrite";
 import { cookies } from "next/headers";
 
+/**
+ * Creates an Appwrite client session using environment variables and cookies.
+ * 
+ * This function initializes a new Appwrite client with the endpoint and project ID
+ * specified in the environment variables. It then retrieves the session cookie and
+ * sets it on the client. If the session cookie is not found, an error is thrown.
+ * 
+ * @throws {Error} If no session cookie is found.
+ * 
+ * @returns {Object} An object containing instances of Appwrite services (Account, Databases, Storage).
+ * 
+ * @property {Account} account - An instance of the Appwrite Account service.
+ * @property {Databases} database - An instance of the Appwrite Databases service.
+ * @property {Storage} storage - An instance of the Appwrite Storage service.
+ */
 export async function createSessionClient() {
   const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
@@ -36,6 +51,18 @@ export async function createSessionClient() {
   };
 }
 
+/**
+ * Creates an Appwrite client configured with admin privileges.
+ * 
+ * This function initializes a new Appwrite client using the endpoint, project ID,
+ * and API key specified in the environment variables. It returns an object with
+ * properties to access the Account and Databases services.
+ * 
+ * @returns An object containing the `account` and `database` properties, which
+ * provide access to the Appwrite Account and Databases services respectively.
+ * 
+ * @throws Will throw an error if any of the required environment variables are not set.
+ */
 export async function createAdminClient() {
   const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
@@ -53,6 +80,15 @@ export async function createAdminClient() {
   };
 }
 
+/**
+ * Retrieves the currently logged-in user.
+ *
+ * This function attempts to create a session client and fetch the account details
+ * of the currently logged-in user. If successful, it returns the user account information.
+ * If an error occurs (e.g., no user is logged in), it returns null.
+ *
+ * @returns {Promise<any | null>} A promise that resolves to the user account information if logged in, or null if not.
+ */
 export async function getLoggedInUser() {
   try {
     const { account } = await createSessionClient();
@@ -121,6 +157,13 @@ export async function listProjectDocuments(): Promise<Project[]> {
   }
 }
 
+/**
+ * Lists tasks associated with a specific project ID.
+ *
+ * @param {string} projectId - The ID of the project for which to list tasks.
+ * @returns {Promise<Task[]>} A promise that resolves to an array of tasks associated with the specified project ID.
+ * @throws Will throw an error if there is an issue listing the documents.
+ */
 export async function listProjectTasksById(projectId: string): Promise<Task[]> {
   try {
     const { database } = await createSessionClient();
@@ -194,6 +237,13 @@ export const addTaskToProject = async (
   }
 };
 
+/**
+ * Retrieves a project document from the Appwrite database by its ID.
+ *
+ * @param {string} projectId - The ID of the project to retrieve.
+ * @returns {Promise<Project>} - A promise that resolves to the project document.
+ * @throws Will throw an error if the document retrieval fails.
+ */
 export const getProjectById = async (projectId: string) => {
   const { database } = await createSessionClient();
 

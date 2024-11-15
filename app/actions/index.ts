@@ -2,20 +2,21 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ID, InputFile } from "node-appwrite";
+import { ID } from "node-appwrite";
 import { createAdminClient, createSessionClient } from "../services/appwrite";
 import { Readable } from "node:stream";
+import { InputFile } from "node-appwrite/file";
 
 /**
  * Logs in a user using the provided form data.
  * @param formData - The form data containing the user's email and password.
  * @returns {Promise<void>} - A promise that resolves when the user is logged in successfully.
  */
-export async function signInUser(state: any, formData: FormData): Promise<any> {
+export async function signInUser(
+  email: string,
+  password: string
+): Promise<any> {
   try {
-    const email = formData.get("email");
-    const password = formData.get("password");
-
     const { account } = await createAdminClient();
 
     const session = await account.createEmailPasswordSession(
@@ -29,9 +30,12 @@ export async function signInUser(state: any, formData: FormData): Promise<any> {
       sameSite: "strict",
       secure: true,
     });
+
+    console.log("Logged in successfully", session);
   } catch (error) {
-    // console.error("[loginUser]", error);
+    console.error("[loginUser]", error);
     return {
+      error: true,
       message: (error as any)?.message,
     };
   }
@@ -41,16 +45,13 @@ export async function signInUser(state: any, formData: FormData): Promise<any> {
 
 /**
  * Signs up a user with the provided form data.
- * 
+ *
  * @param state - The state object.
  * @param formData - The form data containing user information.
  * @returns A promise that resolves when the user is signed up successfully, or rejects with an error.
  */
-export async function signUpUser(state: any, formData: FormData) {
+export async function signUpUser(name: string, email: string, password: string) {
   try {
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const name = formData.get("name");
 
     const { account } = await createAdminClient();
 
@@ -60,6 +61,8 @@ export async function signUpUser(state: any, formData: FormData) {
       password as string,
       name as string
     );
+
+
     const session = await account.createEmailPasswordSession(
       email as string,
       password as string
@@ -75,7 +78,10 @@ export async function signUpUser(state: any, formData: FormData) {
     redirect("/dashboard");
   } catch (error) {
     console.error("[signUpUser]", error);
-    return Promise.reject(error);
+    return {
+      error: true,
+      message: (error as any)?.message,
+    }
   }
 }
 
@@ -114,12 +120,12 @@ export async function uploadFile(formData: FormData) {
     const file = formData.get("uploadFile") as File;
 
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const blob = new Blob([arrayBuffer]);
 
     const response = await storage.createFile(
       process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
       ID.unique(),
-      InputFile.fromBuffer(buffer, file.name)
+      InputFile.fromBuffer(blob, file.name)
     );
     return response;
   } catch (error) {
@@ -172,7 +178,10 @@ export async function listFiles() {
 export async function getFile(fileId: string) {
   try {
     const { storage } = await createSessionClient();
-    const response = await storage.getFile(process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,fileId);
+    const response = await storage.getFile(
+      process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!,
+      fileId
+    );
     return response;
   } catch (error) {
     console.error("Error getting file:", error);
@@ -180,8 +189,7 @@ export async function getFile(fileId: string) {
   }
 }
 
-export async function updateFile(fileId: string, formData: FormData) {
-}
+export async function updateFile(fileId: string, formData: FormData) {}
 
 export async function previewFile(fileId: string) {
   try {

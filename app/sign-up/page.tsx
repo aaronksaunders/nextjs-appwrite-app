@@ -4,83 +4,127 @@ import { useFormState, useFormStatus } from "react-dom";
 import { signUpUser } from "../actions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { getLoggedInUser } from "../services/appwrite";
+import { useCheckLoggedInUser } from "../hooks";
 
 /**
- * Renders the sign-up page component.
+ * SignUpPage component handles the sign-up process for users.
+ * It checks if a user is already logged in and redirects to the dashboard if true.
+ * Otherwise, it displays a sign-up form.
  *
- * @returns The sign-up page component.
+ * @component
+ * @returns {JSX.Element} The rendered component.
  */
 export default function SignUpPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Check if the user is already logged in and redirect to the dashboard if they are
-  useEffect(() => {
-    getLoggedInUser().then((user) => {
-      if (user) {
-        router.replace("/dashboard");
-        return;
-      }
-      loading && setLoading(false);
-    });
-  }, [loading, router]);
-
-  // Handle the sign-up form submission
-  const [state, action] = useFormState(signUpUser, undefined);
-
-  // Get the form status
+  const { isLoading, error: loggedInStatusErr } = useCheckLoggedInUser();
   const { pending } = useFormStatus();
 
-  if (loading) return <p>Loading...</p>;
+  useEffect(() => {
+    setError(loggedInStatusErr);
+  }, [loggedInStatusErr]);
 
   /**
-   * Renders a sign-up form component.
+   * Handles the sign-up form submission.
+   * Prevents the default form submission behavior, extracts form data,
+   * and calls the sign-up function.
    *
-   * @param {Object} props - The component props.
-   * @param {Function} props.signUpUser - The function to handle user sign-up.
-   * @returns {JSX.Element} The sign-up form component.
+   * @param {React.FormEvent<HTMLFormElement>} event - The form submission event.
    */
-  function SignUpForm({ signUpUser }: { signUpUser: any }) {
+  const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    return (
-      <form action={signUpUser} className="flex flex-col pt-4 gap-4">
-        <div className="flex flex-row">
-          <label htmlFor="name" className="w-20">
-            Name
-          </label>
-          <input id="name" name="name" placeholder="Name" />
-        </div>
-        <div className="flex flex-row">
-          <label htmlFor="email" className="w-20">
-            Email
-          </label>
-          <input id="email" name="email" type="email" placeholder="Email" />
-        </div>
-        <div className="flex flex-row">
-          <label htmlFor="password" className="w-20">
-            Password
-          </label>
-          <input id="password" name="password" type="password" />
-        </div>
-        <button
-          type="submit"
-          className="mt-4 border border-black dark:border-white"
-          aria-disabled={pending}
-        >
-          {!pending ? "Sign Up" : "Signing Up..."}
-        </button>
-      </form>
-    );
-  }
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    if (!name || !email || !password) {
+      setError("Name, email, and password are required.");
+      return;
+    }
+
+    try {
+      const response = await signUpUser(name, email, password);
+      if (response.error) {
+        setError(response.message);
+        return;
+      }
+      // Handle successful sign-up
+    } catch (err) {
+      console.error("Error signing up:", err);
+      setError("Failed to sign up.");
+    }
+  };
+
+  if (isLoading) return <p>Loading...</p>;
 
   return (
     <main className="">
       <h2 className="text-2xl font-bold">App Entry Point</h2>
       <div className="flex flex-col items-center gap-4">
-        <SignUpForm signUpUser={action} />
-        <Link href="/sign-in">Sign In</Link>
+        {error && <p className="text-red-500">{error}</p>}
+        <form
+          className="flex flex-col pt-4 gap-4 border-2 p-4 w-96 border-gray-300 rounded-lg shadow-md mt-4"
+          onSubmit={handleSignUp}
+        >
+          <h2>SIGN UP</h2>
+          <div className="flex flex-row items-center">
+            <label htmlFor="name" className="w-20">
+              Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Name"
+              className="flex-auto px-2 py-1"
+              required
+            />
+          </div>
+          <div className="flex flex-row items-center">
+            <label htmlFor="email" className="w-20">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email"
+              className="flex-auto px-2 py-1"
+              required
+            />
+          </div>
+          <div className="flex flex-row items-center">
+            <label htmlFor="password" className="w-20">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              className="flex-auto px-2 py-1"
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-4 items-center">
+            <button
+              type="submit"
+              className="mt-4 border border-gray-400 py-2 rounded-md w-80 font-bold"
+              disabled={pending}
+            >
+              {!pending ? "Sign Up" : "Signing Up..."}
+            </button>
+            <Link
+              href="/sign-in"
+              className="border border-gray-400 py-2 rounded-md w-80 font-bold text-center"
+            >
+              Back To Sign In Page
+            </Link>
+          </div>
+        </form>
       </div>
     </main>
   );

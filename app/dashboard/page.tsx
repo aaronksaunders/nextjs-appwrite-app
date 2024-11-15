@@ -4,8 +4,9 @@ import { getLoggedInUser } from "../services/appwrite";
 import { redirect } from "next/navigation";
 
 const DashboardPage = async () => {
-
+  console.log("DashboardPage");
   const user = await getLoggedInUser();
+  console.log("user", user);
   if (!user) redirect("/sign-in");
 
   return (

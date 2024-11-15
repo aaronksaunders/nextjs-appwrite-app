@@ -1,15 +1,9 @@
-import { useState } from "react";
-import { getLoggedInUser } from "./services/appwrite";
 import { redirect } from "next/navigation";
+import { useCheckLoggedInUser } from "./hooks";
 
 export default async function Home() {
-
-  const user = await getLoggedInUser();
-  console.log("[index page]=>",user);
-
-
-  if (!user) redirect("/sign-in");
+  const { isLoading, error: loggedInStatusErr } = useCheckLoggedInUser();
+  if (isLoading) return <p>Loading...</p>;
+  if (loggedInStatusErr) return <p>Error: {loggedInStatusErr}</p>;
   redirect("/dashboard");
-
-
 }
